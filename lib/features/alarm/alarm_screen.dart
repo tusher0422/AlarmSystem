@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:intl/intl.dart';
 import '../../models/alarm.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AlarmScreen extends StatefulWidget {
   final String location;
@@ -24,6 +26,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
     tz.initializeTimeZones();
     _initializeNotifications();
     _setLocalTimeZone();
+    _loadAlarms();
   }
 
   Future<void> _setLocalTimeZone() async {
@@ -33,6 +36,21 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
   void _initializeNotifications() async {
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const androidChannel = AndroidNotificationChannel(
+      'alarm_channel',
+      'Alarms',
+      description: 'Channel for alarm notifications',
+      importance: Importance.max,
+      sound: RawResourceAndroidNotificationSound('alarm'),
+      playSound: true,
+    );
+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidChannel);
+
     const settings = InitializationSettings(android: androidSettings);
     await _flutterLocalNotificationsPlugin.initialize(settings);
   }
@@ -53,10 +71,31 @@ class _AlarmScreenState extends State<AlarmScreen> {
       final newAlarm = Alarm(time: picked, dateTime: scheduled);
       setState(() => _alarms.add(newAlarm));
       _scheduleNotification(newAlarm);
+      await _saveAlarms();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Alarm set successfully!')),
       );
+    }
+  }
+
+  Future<void> _saveAlarms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final alarmJsonList = _alarms.map((alarm) => alarm.toJson()).toList();
+    await prefs.setStringList('alarms', alarmJsonList);
+  }
+
+  Future<void> _loadAlarms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final alarmJsonList = prefs.getStringList('alarms') ?? [];
+
+    setState(() {
+      _alarms.clear();
+      _alarms.addAll(alarmJsonList.map((json) => Alarm.fromJson(json)));
+    });
+
+    for (var alarm in _alarms) {
+      if (alarm.isOn) _scheduleNotification(alarm);
     }
   }
 
@@ -89,9 +128,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
   void _cancelNotification(Alarm alarm) async {
     final id = alarm.dateTime.hashCode;
     await _flutterLocalNotificationsPlugin.cancel(id);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Alarm turned off.')),
-    );
   }
 
   @override
@@ -105,8 +141,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-
-              // Selected Location header
               const Text(
                 "Selected Location",
                 style: TextStyle(
@@ -116,8 +150,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Location row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -136,8 +168,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Add Alarm button
               Center(
                 child: SizedBox(
                   width: 200,
@@ -155,8 +185,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Alarms Header
               const Text(
                 "Alarms",
                 style: TextStyle(
@@ -166,8 +194,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              // Alarm list
               Expanded(
                 child: _alarms.isEmpty
                     ? const Center(
@@ -195,7 +221,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Left side: Time
                           Text(
                             formattedTime,
                             style: const TextStyle(
@@ -204,8 +229,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
-                          // Right side: Date + Switch
                           Row(
                             children: [
                               Text(
@@ -219,19 +242,14 @@ class _AlarmScreenState extends State<AlarmScreen> {
                               Switch(
                                 activeColor: Colors.purple,
                                 value: alarm.isOn,
-                                onChanged: (value) {
+                                onChanged: (value) async {
                                   setState(() => alarm.isOn = value);
                                   if (value) {
                                     _scheduleNotification(alarm);
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                          Text('Alarm turned on.')),
-                                    );
                                   } else {
                                     _cancelNotification(alarm);
                                   }
+                                  await _saveAlarms();
                                 },
                               ),
                             ],

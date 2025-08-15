@@ -138,7 +138,6 @@ class _LocationScreenState extends State<LocationScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  icon: const Icon(Icons.home_outlined, color: Colors.white),
                   label: const Text(
                     "Home",
                     style: TextStyle(color: Colors.white, fontSize: 16),
