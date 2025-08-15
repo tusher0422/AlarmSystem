@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../location/location_screen.dart';
+import '../../core/theme.dart';
 import '../../models/onboarding.dart';
+import '../../features/location/location_screen.dart';
+
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,147 +12,189 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _controller = PageController();
-  bool onLastPage = false;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
-  // Create a list of onboarding page models
-  final List<OnboardingPageModel> pages = [
-    OnboardingPageModel(
-      title: "Sync with Nature’s Rhythm",
-      subtitle:
-      "Experience a peaceful relaxation that’s in rhythm with the natural world. Sleep smarter, wake up better.",
-      image: 'assets/onboarding1.jpg',
-    ),
-    OnboardingPageModel(
-      title: "Effortless & Automatic",
-      subtitle:
-      "No need to set alarms manually. Enjoy relaxation that adapts to your location and lifestyle.",
-      image: 'assets/onboarding2.jpg',
-    ),
-    OnboardingPageModel(
-      title: "Relax & Unwind",
-      subtitle: "Enjoy the calm that encourages you to pursue your dreams.",
-      image: 'assets/onboarding3.jpg',
-    ),
-  ];
+  void _nextPage() {
+    if (_currentPage < onboardingPages.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      // Last page → go to LocationScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LocationScreen()),
+      );
+    }
+  }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void _skip() {
+    // All skip buttons → go to LocationScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LocationScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _controller,
-            itemCount: pages.length,
-            onPageChanged: (index) {
-              setState(() {
-                onLastPage = index == pages.length - 1;
-              });
-            },
-            itemBuilder: (_, index) {
-              final page = pages[index];
-              return OnboardingPage(
-                title: page.title,
-                subtitle: page.subtitle,
-                image: page.image,
-              );
-            },
-          ),
+      backgroundColor: darkTheme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              itemCount: onboardingPages.length,
+              itemBuilder: (context, index) {
+                final page = onboardingPages[index];
+                return Column(
+                  children: [
+                    // Top image with curve
+                    Expanded(
+                      flex: 6,
+                      child: Stack(
+                        children: [
+                          ClipPath(
+                            clipper: CurvedBottomClipper(),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage(page.image),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 16,
+                            right: 20,
+                            child: TextButton(
+                              onPressed: _skip,
+                              child: const Text(
+                                'Skip',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-          Positioned(
-            top: 50,
-            right: 20,
-            child: TextButton(
-              child: const Text("Skip", style: TextStyle(color: Colors.white)),
-              onPressed: () {
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (_) => const LocationScreen()));
+                    // Bottom square box
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        color: Colors.grey[900],
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                Text(
+                                  page.title,
+                                  style: darkTheme.textTheme.bodyLarge?.copyWith(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  page.subtitle,
+                                  style: darkTheme.textTheme.bodyMedium?.copyWith(
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ],
+                            ),
+                            // Bottom row: dots + full-width Next button
+                            Column(
+                              children: [
+                                // Dots
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    onboardingPages.length,
+                                        (dotIndex) => Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _currentPage == dotIndex
+                                            ? Colors.white
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                // Full-width Next button
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 50,
+                                  child: ElevatedButton(
+                                    style: darkTheme.elevatedButtonTheme.style?.copyWith(
+                                      shape: MaterialStateProperty.all(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                        ),
+                                      ),
+                                    ),
+                                    onPressed: _nextPage,
+                                    child: const Text(
+                                      'Next',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
-          ),
-
-          Positioned(
-            bottom: 30,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                SmoothPageIndicator(
-                  controller: _controller,
-                  count: pages.length,
-                  effect: const WormEffect(dotColor: Colors.grey),
-                ),
-                ElevatedButton(
-                  child: Text(onLastPage ? "Done" : "Next"),
-                  onPressed: () {
-                    if (onLastPage) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LocationScreen(),
-                        ),
-                      );
-                    } else {
-                      _controller.nextPage(
-                        duration: const Duration(milliseconds: 500),
-                        curve: Curves.easeIn,
-                      );
-                    }
-                  },
-                )
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class OnboardingPage extends StatelessWidget {
-  final String title, subtitle, image;
-
-  const OnboardingPage({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.image,
-  });
+// Curved bottom for the top image only
+class CurvedBottomClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, size.height - 50);
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height,
+      size.width,
+      size.height - 50,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      color: Colors.black,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(image, height: 300),
-          const SizedBox(height: 30),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 24,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Text(
-            subtitle,
-            style: const TextStyle(color: Colors.white70),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

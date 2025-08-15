@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../alarm/alarm_screen.dart';
 
 class LocationScreen extends StatefulWidget {
@@ -10,58 +11,70 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  String? _locationText;
+  String _locationText = "Location not set";
+  bool _isFetching = false;
 
   Future<void> _getLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    setState(() => _isFetching = true);
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return setState(() {
-        _locationText = 'Location services are disabled.';
-      });
+    String? location = await _fetchLocation();
+    setState(() => _isFetching = false);
+
+    if (location != null && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => AlarmScreen(location: location)),
+      );
     }
+  }
 
-    permission = await Geolocator.checkPermission();
+  Future<String?> _fetchLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return null;
+
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return setState(() {
-          _locationText = 'Location permissions are denied.';
-        });
+      if (permission == LocationPermission.denied) return null;
+    }
+
+    if (permission == LocationPermission.deniedForever) return null;
+
+    final position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    try {
+      final placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+      if (placemarks.isNotEmpty) {
+        final placemark = placemarks.first;
+        return [
+          placemark.locality,
+          placemark.subAdministrativeArea,
+          placemark.country
+        ].where((e) => e != null && e.isNotEmpty).join(", ");
       }
-    }
+    } catch (_) {}
 
-    if (permission == LocationPermission.deniedForever) {
-      return setState(() {
-        _locationText =
-        'Location permissions are permanently denied, cannot request.';
-      });
-    }
+    return "${position.latitude}, ${position.longitude}";
+  }
 
-    final position = await Geolocator.getCurrentPosition();
-    setState(() {
-      _locationText = 'Lat: ${position.latitude}, Lon: ${position.longitude}';
-    });
-
+  void _goToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => AlarmScreen(location: _locationText!),
-      ),
+      MaterialPageRoute(builder: (_) => AlarmScreen(location: _locationText)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Set a fixed width for buttons for consistency
-    const buttonWidth = 250.0;
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -69,19 +82,22 @@ class _LocationScreenState extends State<LocationScreen> {
               const Text(
                 "Welcome! Your Personalized Alarm",
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               const Text(
                 "A lovely cute tone is your smart alarm based on your location.",
-                style: TextStyle(color: Colors.white70),
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
               ClipOval(
                 child: Image.asset(
                   "assets/location_illustration.jpg",
@@ -90,37 +106,46 @@ class _LocationScreenState extends State<LocationScreen> {
                   fit: BoxFit.cover,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
+              // First button
               SizedBox(
-                width: buttonWidth,
+                width: double.infinity,
                 child: ElevatedButton.icon(
-                  label: const Text("Use Current Location"),
-                  icon: const Icon(Icons.location_on_outlined),
-                  onPressed: _getLocation,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[850],
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  icon: const Icon(Icons.location_on_outlined, color: Colors.white),
+                  label: const Text(
+                    "Use Current Location",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  onPressed: _isFetching ? null : _getLocation,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 16),
+              // Second button
               SizedBox(
-                width: buttonWidth,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            AlarmScreen(location: _locationText ?? 'Unknown location'),
-                      ),
-                    );
-                  },
-                  child: const Text("Home"),
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[850],
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  icon: const Icon(Icons.home_outlined, color: Colors.white),
+                  label: const Text(
+                    "Home",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  onPressed: _goToHome,
                 ),
               ),
-              const SizedBox(height: 20),
-              if (_locationText != null)
-                Text(
-                  _locationText!,
-                  style: const TextStyle(color: Colors.white70),
-                )
             ],
           ),
         ),

@@ -1,14 +1,12 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-class AlarmEntry {
+class Alarm {
   final TimeOfDay time;
   final tz.TZDateTime dateTime;
   bool isOn;
 
-  AlarmEntry({
+  Alarm({
     required this.time,
     required this.dateTime,
     this.isOn = true,
