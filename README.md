@@ -40,18 +40,19 @@ flutter run
 ---
 
 ## Screenshots
-<img width="770" height="440" alt="image" src="https://github.com/user-attachments/assets/9e5f6ffb-b688-4135-b4ee-552a50c562a1" />
+<img width="293" height="454" alt="1" src="https://github.com/user-attachments/assets/184266b2-33ef-4f19-9191-07d43d47f458" />
 
-<img width="770" height="440" alt="image" src="https://github.com/user-attachments/assets/aaec99ab-5418-4879-86d3-592ea4a332ed" />
+<img width="293" height="454" alt="2" src="https://github.com/user-attachments/assets/ec2d53a5-84b2-442f-9d67-c8b6f6c67e10" />
 
-<img width="770" height="440" alt="image" src="https://github.com/user-attachments/assets/41533017-5dac-4c03-a988-1c1206c9e177" />
+<img width="293" height="454" alt="3" src="https://github.com/user-attachments/assets/0d595532-c0e8-4879-90f6-b0676040b561" />
 
-<img width="770" height="440" alt="image" src="https://github.com/user-attachments/assets/d3744258-92e9-43c1-a4c9-a941c0600f15" />
+<img width="293" height="454" alt="4" src="https://github.com/user-attachments/assets/0d33e5c6-b4d2-419e-a803-2b50b9392cca" />
 
-<img width="770" height="440" alt="image" src="https://github.com/user-attachments/assets/ffc41fae-325b-4fab-970b-653c4092d238" />
+<img width="293" height="454" alt="5" src="https://github.com/user-attachments/assets/3d5f4f65-d9d5-40be-81ba-3ef9a8d81a5d" />
 
-<img width="770" height="440" alt="image" src="https://github.com/user-attachments/assets/58c5cd3e-4b17-4e4c-8c04-f12f2fbe200e" />
+<img width="293" height="454" alt="6" src="https://github.com/user-attachments/assets/0f104e98-070f-4ef4-b1b8-4f721de60857" />
 
+<img width="293" height="454" alt="7" src="https://github.com/user-attachments/assets/755b2535-1bb2-4a5b-8df2-f9389fcec7f5" />
 
 
 
