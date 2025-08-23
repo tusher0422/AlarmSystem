@@ -40,19 +40,19 @@ flutter run
 ---
 
 ## Screenshots
-<img width="293" height="454" alt="1" src="https://github.com/user-attachments/assets/184266b2-33ef-4f19-9191-07d43d47f458" />
+![1](https://github.com/user-attachments/assets/7f18caa1-42eb-4754-8eef-571aae89b72f)
 
-<img width="293" height="454" alt="2" src="https://github.com/user-attachments/assets/ec2d53a5-84b2-442f-9d67-c8b6f6c67e10" />
+![2](https://github.com/user-attachments/assets/5b836a8e-5e0e-4120-9cc1-f77ea32c869b)
 
-<img width="293" height="454" alt="3" src="https://github.com/user-attachments/assets/0d595532-c0e8-4879-90f6-b0676040b561" />
+![3](https://github.com/user-attachments/assets/87e3e28e-7e93-4963-81cd-b8b1ad17cae4)
 
-<img width="293" height="454" alt="4" src="https://github.com/user-attachments/assets/0d33e5c6-b4d2-419e-a803-2b50b9392cca" />
+![4](https://github.com/user-attachments/assets/5d027e8b-ab89-4968-a1da-78eb2486ce64)
 
-<img width="293" height="454" alt="5" src="https://github.com/user-attachments/assets/3d5f4f65-d9d5-40be-81ba-3ef9a8d81a5d" />
+![5](https://github.com/user-attachments/assets/4ce8b86f-f20b-4d3c-98dd-519e85c26245)
 
-<img width="293" height="454" alt="6" src="https://github.com/user-attachments/assets/0f104e98-070f-4ef4-b1b8-4f721de60857" />
+![6](https://github.com/user-attachments/assets/b5eba08c-1582-4d73-8ba6-b5c32ae4a190)
 
-<img width="293" height="454" alt="7" src="https://github.com/user-attachments/assets/755b2535-1bb2-4a5b-8df2-f9389fcec7f5" />
+![7](https://github.com/user-attachments/assets/aea62c8e-f389-4922-ba69-bf64cccf53af)
 
 
 
